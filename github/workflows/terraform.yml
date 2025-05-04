@@ -1,0 +1,25 @@
+
+name: Deploy Landing Zone
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment Environment'
+        required: true
+        default: 'sandbox'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: ./github/templates/login.yml
+
+      - name: Deploy Terraform
+        uses: ./github/templates/deploy.yml
+        with:
+          environment: ${{ github.event.inputs.environment }}

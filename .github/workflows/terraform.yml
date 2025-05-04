@@ -1,0 +1,76 @@
+name: Deploy All Environments
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [sandbox, test, prod]
+
+    environment: ${{ matrix.env }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Azure Login with OIDC
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: TFLint
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          tflint --init
+          tflint
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Init
+        run: terraform init -backend-config=environments/${{ matrix.env }}/backend.tfvars
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=environments/${{ matrix.env }}/terraform.tfvars
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -var-file=environments/${{ matrix.env }}/terraform.tfvars
+
+      - name: Deploy Function App
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd src/functionapp
+          zip -r functionapp.zip .
+          az functionapp deployment source config-zip \
+            --name ${{ secrets.FUNCTION_APP_NAME }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} \
+            --src functionapp.zip
+
+      - name: Deploy Static Web App
+        if: github.ref == 'refs/heads/main'
+        run: |
+          az staticwebapp upload \
+            --name ${{ secrets.STATIC_WEBAPP_NAME }} \
+            --resource-group ${{ secrets.RESOURCE_GROUP_NAME }} \
+            --source ./src/webapp \
+            --deployment-token ${{ secrets.STATIC_WEBAPP_TOKEN }}
+          

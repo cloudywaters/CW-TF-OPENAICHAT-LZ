@@ -1,0 +1,12 @@
+
+- name: Upload Static Web App package
+  run: |
+    echo "Deploying Static Web App..."
+    az staticwebapp upload       --name ${{ secrets.STATIC_WEBAPP_NAME }}       --resource-group ${{ secrets.RESOURCE_GROUP_NAME }}       --source ./src/webapp       --deployment-token ${{ secrets.STATIC_WEBAPP_TOKEN }}
+
+- name: Deploy Python Function App
+  run: |
+    echo "Zipping and deploying Function App..."
+    cd src/functionapp
+    zip -r functionapp.zip .
+    az functionapp deployment source config-zip       --name ${{ secrets.FUNCTION_APP_NAME }}       --resource-group ${{ secrets.RESOURCE_GROUP_NAME }}       --src functionapp.zip

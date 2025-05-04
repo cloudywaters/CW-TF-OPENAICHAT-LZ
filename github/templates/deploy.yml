@@ -1,0 +1,24 @@
+
+name: 'Deploy Terraform'
+description: 'Reusable Terraform deployment step'
+inputs:
+  environment:
+    required: true
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.6
+
+    - name: Init & Plan
+      run: |
+        terraform init -backend-config=environments/${{ inputs.environment }}/backend.tfvars
+        terraform plan -var-file=environments/${{ inputs.environment }}/terraform.tfvars
+
+    - name: Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -auto-approve -var-file=environments/${{ inputs.environment }}/terraform.tfvars

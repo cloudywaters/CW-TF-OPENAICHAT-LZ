@@ -1,0 +1,10 @@
+
+name: 'Login to Azure'
+description: 'Reusable login action'
+runs:
+  using: 'composite'
+  steps:
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}

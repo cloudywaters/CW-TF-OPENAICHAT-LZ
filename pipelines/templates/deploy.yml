@@ -1,0 +1,11 @@
+
+parameters:
+  - name: environment
+    type: string
+
+steps:
+  - script: |
+      terraform init -backend-config=environments/${{ parameters.environment }}/backend.tfvars
+      terraform plan -var-file=environments/${{ parameters.environment }}/terraform.tfvars
+      terraform apply -auto-approve -var-file=environments/${{ parameters.environment }}/terraform.tfvars
+    displayName: 'Terraform Deploy'

@@ -1,0 +1,21 @@
+
+trigger: none
+
+parameters:
+  - name: environment
+    displayName: 'Environment'
+    type: string
+    default: 'sandbox'
+
+stages:
+  - stage: Deploy
+    jobs:
+      - job: DeployInfra
+        steps:
+          - template: templates/login.yml
+            parameters:
+              azureServiceConnection: 'AzureServiceConnection'
+
+          - template: templates/deploy.yml
+            parameters:
+              environment: ${{ parameters.environment }}

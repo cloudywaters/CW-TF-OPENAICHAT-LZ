@@ -1,0 +1,19 @@
+
+- script: |
+    echo "Deploying Function App..."
+    cd src/functionapp
+    zip -r functionapp.zip .
+    az functionapp deployment source config-zip \
+      --name $(FUNCTION_APP_NAME) \
+      --resource-group $(RESOURCE_GROUP_NAME) \
+      --src functionapp.zip
+  displayName: 'Deploy Function App'
+
+- script: |
+    echo "Deploying Static Web App..."
+    az staticwebapp upload \
+      --name $(STATIC_WEBAPP_NAME) \
+      --resource-group $(RESOURCE_GROUP_NAME) \
+      --source ./src/webapp \
+      --deployment-token $(STATIC_WEBAPP_TOKEN)
+  displayName: 'Deploy Static Web App'
