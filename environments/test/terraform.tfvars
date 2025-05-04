@@ -21,20 +21,13 @@ token_secret_name   = "STATIC_WEBAPP_TOKEN"
 web_app_settings = {
   "ENVIRONMENT" = "dev"
 }
-function_app_settings = {
-  "OPENAI_API_KEY" = "REPLACE_ME"
-}
 storage_account_name = "tfchatstorage"
 sql_admin_username   = "sqladmin"
-sql_admin_password   = "REPLACE_ME"
 openai_subdomain     = "chatopenai001"
 
 apim_publisher_name  = "ChatOps"
 apim_publisher_email = "chat@example.com"
 apim_sku             = "Developer_1"
-function_api_spec_url = "https://example.com/function-api.json"
-openai_api_spec_url   = "https://example.com/openai-api.json"
-appgw_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-network-001/providers/Microsoft.Network/virtualNetworks/chat-vnet-001/subnets/appgw"
 tags = {
   project = "chat-landingzone"
   env     = "sandbox"

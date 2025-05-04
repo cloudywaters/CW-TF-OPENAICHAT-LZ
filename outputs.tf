@@ -17,3 +17,10 @@ output "apim_instance_name" {
 output "application_gateway_name" {
   value = module.appgateway.name
 }
+
+output "core_resource_group_name" {
+  value = azurerm_resource_group.core.name
+}
+output "network_resource_group_name" {
+  value = azurerm_resource_group.network.name
+}

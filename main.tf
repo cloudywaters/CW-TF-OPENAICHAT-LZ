@@ -1,4 +1,17 @@
 
+resource "azurerm_resource_group" "core" {
+  name     = var.resource_group_name
+  location = var.location
+  tags     = var.tags
+}
+
+resource "azurerm_resource_group" "network" {
+  name     = var.network_rg
+  location = var.location
+  tags     = var.tags
+}
+
+
 module "naming" {
   source = "./modules/naming"
   prefix = var.prefix
@@ -9,7 +22,7 @@ module "network" {
   source              = "./modules/network"
   vnet_name           = module.naming.vnet_name
   location            = var.location
-  resource_group_name = var.network_rg
+  resource_group_name = azurerm_resource_group.network.name
   address_space       = var.address_space
   subnets             = var.subnets
   tags                = var.tags
@@ -19,7 +32,7 @@ module "static_web_app" {
   source              = "./modules/staticwebapp"
   name                = module.naming.static_web_app_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.core.name
   branch              = var.branch
   repository_url      = var.repository_url
   token_secret_name   = "@Microsoft.KeyVault(SecretName=static-webapp-token)"
@@ -67,8 +80,8 @@ module "apim" {
   publisher_name        = var.apim_publisher_name
   publisher_email       = var.apim_publisher_email
   sku_name              = var.apim_sku
-  function_api_spec_url = var.function_api_spec_url
-  openai_api_spec_url   = var.openai_api_spec_url
+  function_api_spec_url = module.function_app.function_api_spec_url
+  openai_api_spec_url   = module.openai.openai_api_spec_url
   tags                  = var.tags
 }
 
