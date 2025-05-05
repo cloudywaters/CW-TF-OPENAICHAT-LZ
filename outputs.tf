@@ -24,3 +24,17 @@ output "core_resource_group_name" {
 output "network_resource_group_name" {
   value = azurerm_resource_group.network.name
 }
+output "function_app_name" {
+  description = "Name of the Function App"
+  value       = module.function_app.name
+}
+
+output "static_webapp_name" {
+  description = "Name of the Static Web App"
+  value       = module.static_web_app.name
+}
+
+output "resource_group_name" {
+  description = "Resource group used for all app resources"
+  value       = azurerm_resource_group.core.name
+}

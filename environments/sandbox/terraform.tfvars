@@ -3,8 +3,7 @@
 prefix              = "chat"
 suffix              = "001"
 location            = "australiaeast"
-resource_group_name = "rg-chat-001"
-network_rg          = "rg-network-001"
+
 
 address_space = ["10.0.0.0/16"]
 subnets = {

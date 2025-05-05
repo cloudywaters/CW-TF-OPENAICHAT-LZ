@@ -19,6 +19,7 @@ module "naming" {
 }
 
 module "network" {
+  depends_on         = [azurerm_resource_group.network]
   source              = "./modules/network"
   vnet_name           = module.naming.vnet_name
   location            = var.location
@@ -48,6 +49,7 @@ module "function_app" {
   storage_account_name  = var.storage_account_name
   app_settings          = {
     "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)"
+    "OPENAI_API_SPEC_URL" = module.openai.openai_api_spec_url
   }
   tags                  = var.tags
 }
@@ -73,6 +75,8 @@ module "openai" {
 }
 
 module "apim" {
+  depends_on            = [module.function_app]
+  depends_on            = [module.openai]
   source                = "./modules/apim"
   name                  = module.naming.apim_name
   location              = var.location
@@ -86,6 +90,10 @@ module "apim" {
 }
 
 module "appgateway" {
+  depends_on            = [module.network]
+  depends_on            = [module.apim]
+  depends_on            = [module.static_web_app]
+  depends_on            = [module.function_app]
   source                = "./modules/appgateway"
   name                  = "${var.prefix}-appgw-${var.suffix}"
   location              = var.location

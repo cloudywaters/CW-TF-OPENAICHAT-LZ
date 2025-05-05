@@ -3,8 +3,7 @@
 prefix              = "chat"
 suffix              = "001"
 location            = "australiaeast"
-resource_group_name = "rg-chat-001"
-network_rg          = "rg-network-001"
+
 
 address_space = ["10.0.0.0/16"]
 subnets = {
@@ -19,7 +18,7 @@ repository_url      = "https://github.com/your-org/azure-landingzone-chatapp"
 token_secret_name   = "STATIC_WEBAPP_TOKEN"
 
 web_app_settings = {
-  "ENVIRONMENT" = "dev"
+  "ENVIRONMENT" = "test"
 }
 storage_account_name = "tfchatstorage"
 sql_admin_username   = "sqladmin"
@@ -30,5 +29,5 @@ apim_publisher_email = "chat@example.com"
 apim_sku             = "Developer_1"
 tags = {
   project = "chat-landingzone"
-  env     = "sandbox"
+  env     = "test"
 }

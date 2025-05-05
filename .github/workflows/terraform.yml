@@ -56,6 +56,12 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve -var-file=environments/${{ matrix.env }}/terraform.tfvars
 
+      - name: Get App Names from Terraform
+        run: |
+          echo "FUNCTION_APP_NAME=$(terraform output -raw function_app_name)" >> $GITHUB_ENV
+          echo "STATIC_WEBAPP_NAME=$(terraform output -raw static_webapp_name)" >> $GITHUB_ENV
+          echo "RESOURCE_GROUP_NAME=$(terraform output -raw resource_group_name)" >> $GITHUB_ENV
+          
       - name: Deploy Function App
         if: github.ref == 'refs/heads/main'
         run: |
