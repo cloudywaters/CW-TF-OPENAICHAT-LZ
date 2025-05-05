@@ -1,21 +1,19 @@
+module "naming" {
+  source = "./modules/naming"
+  prefix = var.prefix
+  suffix = var.suffix
+}
 
 resource "azurerm_resource_group" "core" {
-  name     = var.resource_group_name
+  name     = module.naming.core_rg_name
   location = var.location
   tags     = var.tags
 }
 
 resource "azurerm_resource_group" "network" {
-  name     = var.network_rg
+  name     = module.naming.network_rg_name
   location = var.location
   tags     = var.tags
-}
-
-
-module "naming" {
-  source = "./modules/naming"
-  prefix = var.prefix
-  suffix = var.suffix
 }
 
 module "network" {
@@ -45,7 +43,7 @@ module "function_app" {
   source                = "./modules/functionapp"
   name                  = module.naming.function_app_name
   location              = var.location
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = azurerm_resource_group.core.name
   storage_account_name  = var.storage_account_name
   app_settings          = {
     "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)"
@@ -58,7 +56,7 @@ module "sql" {
   source                = "./modules/sql"
   name                  = module.naming.sql_db_name
   sql_server_name       = module.naming.sql_server_name
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = azurerm_resource_group.core.name
   location              = var.location
   admin_username        = var.sql_admin_username
   admin_password        = var.sql_admin_password
@@ -69,7 +67,7 @@ module "openai" {
   source                = "./modules/openai"
   name                  = module.naming.openai_name
   location              = var.location
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = azurerm_resource_group.core.name
   subdomain             = var.openai_subdomain
   tags                  = var.tags
 }
@@ -80,7 +78,7 @@ module "apim" {
   source                = "./modules/apim"
   name                  = module.naming.apim_name
   location              = var.location
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = azurerm_resource_group.core.name
   publisher_name        = var.apim_publisher_name
   publisher_email       = var.apim_publisher_email
   sku_name              = var.apim_sku
@@ -95,9 +93,9 @@ module "appgateway" {
   depends_on            = [module.static_web_app]
   depends_on            = [module.function_app]
   source                = "./modules/appgateway"
-  name                  = "${var.prefix}-appgw-${var.suffix}"
+  name                  = module.naming.app_gateway_name
   location              = var.location
-  resource_group_name   = var.resource_group_name
+  resource_group_name   = azurerm_resource_group.core.name
   subnet_id             = var.appgw_subnet_id
   tags                  = var.tags
 }

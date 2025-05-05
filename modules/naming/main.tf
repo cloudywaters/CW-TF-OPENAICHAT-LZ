@@ -20,3 +20,9 @@ output "apim_name" {
 output "vnet_name" {
   value = "${var.prefix}-vnet-${var.suffix}"
 }
+output "core_rg_name" {
+  value = "${var.prefix}-core-rg-${var.suffix}"
+}
+output "network_rg_name" {
+  value = "${var.prefix}-network-rg-${var.suffix}"
+}
