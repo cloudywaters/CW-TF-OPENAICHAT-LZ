@@ -66,10 +66,10 @@ module "static_web_app" {
 # Function App Module (needs keyvault & network)
 module "function" {
   source                  = "./modules/functionapp"
-  name                    = "example-function"
-  resource_group_name     = azurerm_resource_group.example.name
-  location                = azurerm_resource_group.example.location
-  service_plan_resource_id = azurerm_app_service_plan.example.id
+  name                    = var.function_app_name
+  resource_group_name     = azurerm_resource_group.core.name
+  location                = var.location
+  service_plan_resource_id = var.function_app_service_plan_id
   os_type                 = "Linux"
   storage_account_name  = var.storage_account_name
   app_settings          = { "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)" }
