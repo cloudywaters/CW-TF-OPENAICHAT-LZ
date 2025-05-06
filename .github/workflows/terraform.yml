@@ -46,16 +46,40 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          managed_identity: true
 
-      - name: Terraform Init
-        run: terraform init -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT }}" \
-                            -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME }}" \
-                            -backend-config="key=terraform.tfstate" \
-                            -backend-config="access_key=${{ secrets.AZURE_STORAGE_KEY }}"
+      # Deploy to Development Environment
+      - name: Terraform Init for Dev
+        run: terraform init -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_DEV }}" \
+                            -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_DEV }}" \
+                            -backend-config="key=terraform-dev.tfstate"
 
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
+      - name: Terraform Plan for Dev
+        run: terraform plan -var-file="environments/dev.tfvars" -out=tfplan-dev
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+      - name: Terraform Apply for Dev
+        run: terraform apply -auto-approve tfplan-dev
+
+      # Deploy to Test Environment
+      - name: Terraform Init for Test
+        run: terraform init -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_STAGING }}" \
+                            -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_STAGING }}" \
+                            -backend-config="key=terraform-staging.tfstate"
+
+      - name: Terraform Plan for Test
+        run: terraform plan -var-file="environments/staging.tfvars" -out=tfplan-staging
+
+      - name: Terraform Apply for Test
+        run: terraform apply -auto-approve tfplan-staging
+
+      # Deploy to Production Environment
+      - name: Terraform Init for Prod
+        run: terraform init -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_PROD }}" \
+                            -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_PROD }}" \
+                            -backend-config="key=terraform-prod.tfstate"
+
+      - name: Terraform Plan for Prod
+        run: terraform plan -var-file="environments/prod.tfvars" -out=tfplan-prod
+
+      - name: Terraform Apply for Prod
+        run: terraform apply -auto-approve tfplan-prod
