@@ -1,16 +1,11 @@
-
-module "static_web_app" {
-  source  = "Azure/avm-res-web-static-web-app/azurerm"
+module "swa" {
+  source  = "Azure/avm-res-web-staticsite/azurerm"
   version = "1.0.0"
 
   name                = var.name
-  location            = var.location
   resource_group_name = var.resource_group_name
-  sku                 = "Standard"
-
-  identity = {
-    type = "SystemAssigned"
-  }
+  location            = var.location
+  sku                 = var.sku
 
   deployment = {
     branch            = var.branch
@@ -19,6 +14,6 @@ module "static_web_app" {
   }
 
   app_settings = var.app_settings
-
-  tags = var.tags
+  tags         = var.tags
 }
+

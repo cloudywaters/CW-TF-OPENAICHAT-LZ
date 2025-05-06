@@ -1,48 +1,23 @@
+module "function" {
+  source  = "Azure/avm-res-web-site/azurerm"
+  version = "1.0.0"
 
-resource "azurerm_app_service_plan" "function" {
-  name                = "${var.name}-plan"
-  location            = var.location
+  name                = var.name
   resource_group_name = var.resource_group_name
-  kind                = "FunctionApp"
-  reserved            = true
+  location            = var.location
+  kind                = "functionapp"
+  sku_name            = "Y1"      # Consumption plan
+  sku_tier            = "Dynamic"
 
-  sku {
-    tier = "Dynamic"
-    size = "Y1"
-  }
-}
-
-resource "azurerm_storage_account" "function" {
-  name                     = var.storage_account_name
-  resource_group_name      = var.resource_group_name
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-resource "azurerm_linux_function_app" "function" {
-  name                       = var.name
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  service_plan_id            = azurerm_app_service_plan.function.id
-  storage_account_name       = azurerm_storage_account.function.name
-  storage_account_access_key = azurerm_storage_account.function.primary_access_key
-  https_only                 = true
-
-  site_config {
-    application_stack {
-      python_version = "3.11"
-    }
+  site_config = {
+    linux_fx_version = "PYTHON:3.11"
   }
 
-  identity {
+  identity = {
     type = "SystemAssigned"
   }
 
-  app_settings = merge({
-    FUNCTIONS_WORKER_RUNTIME = "python"
-    WEBSITE_RUN_FROM_PACKAGE = 1
-  }, var.app_settings)
-
-  tags = var.tags
+  app_settings = var.app_settings
+  tags         = var.tags
 }
+

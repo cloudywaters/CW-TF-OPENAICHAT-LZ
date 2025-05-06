@@ -1,18 +1,21 @@
+module "sql_server" {
+  source  = "Azure/avm-res-sql-server/azurerm"
+  version = "1.0.0"
 
-resource "azurerm_mssql_server" "sql" {
-  name                         = var.sql_server_name
-  resource_group_name          = var.resource_group_name
-  location                     = var.location
-  version                      = "12.0"
-  administrator_login          = var.admin_username
+  name                       = var.sql_server_name
+  resource_group_name        = var.resource_group_name
+  location                   = var.location
+  administrator_login        = var.admin_username
   administrator_login_password = var.admin_password
-  minimum_tls_version          = "1.2"
+  version                    = "12.0"
+  tags                       = var.tags
 }
 
-resource "azurerm_mssql_database" "sql" {
-  name           = var.name
-  server_id      = azurerm_mssql_server.sql.id
+resource "azurerm_mssql_database" "db" {
+  name           = var.database_name
+  server_id      = module.sql_server.id
   sku_name       = "Basic"
   zone_redundant = false
   tags           = var.tags
 }
+

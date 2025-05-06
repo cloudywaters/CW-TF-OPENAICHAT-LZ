@@ -1,26 +1,20 @@
+module "kv" {
+  source  = "Azure/avm-res-keyvault-vault/azurerm"
+  version = "1.0.0"
 
-resource "azurerm_key_vault" "this" {
-  name                        = var.name
-  location                    = var.location
-  resource_group_name         = var.resource_group_name
-  tenant_id                   = data.azurerm_client_config.current.tenant_id
-  sku_name                    = "standard"
-  soft_delete_retention_days = 7
-  purge_protection_enabled   = true
+  name                = var.name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  sku_name            = "standard"
 
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = var.admin_object_id
-
-    secret_permissions = ["get", "list", "set", "delete"]
-  }
+  access_policies = [
+    for p in var.access_policies : {
+      tenant_id = data.azurerm_client_config.current.tenant_id
+      object_id = p.object_id
+      secret_permissions = p.secret_permissions
+    }
+  ]
 
   tags = var.tags
-}
-
-output "id" {
-  value = azurerm_key_vault.this.id
-}
-output "name" {
-  value = azurerm_key_vault.this.name
 }

@@ -1,16 +1,21 @@
+module "openai" {
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "1.0.0"
 
-resource "azurerm_cognitive_account" "openai" {
-  name                      = var.name
-  location                  = var.location
-  resource_group_name       = var.resource_group_name
-  kind                      = "OpenAI"
-  sku_name                  = "S0"
-  custom_subdomain_name     = var.subdomain
-  public_network_access_enabled = false
+  name                = var.name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  sku_name            = "S0"
+  kind                = "OpenAI"
+  custom_subdomain    = var.subdomain
 
-  identity {
-    type = "SystemAssigned"
+  network_acls = {
+    default_action = "Deny"
+    virtual_network_rules = [{
+      subnet_id = var.subnet_id
+    }]
   }
 
   tags = var.tags
 }
+

@@ -1,72 +1,64 @@
+module "appgw" {
+  source  = "Azure/avm-res-network-applicationgateway/azurerm"
+  version = "1.0.0"
 
-resource "azurerm_public_ip" "appgw" {
-  name                = "${var.name}-pip"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
-
-resource "azurerm_application_gateway" "appgw" {
   name                = var.name
-  location            = var.location
   resource_group_name = var.resource_group_name
+  location            = var.location
 
-  sku {
-    name     = "WAF_v2"
+  sku = {
     tier     = "WAF_v2"
+    name     = "WAF_v2"
     capacity = 2
   }
 
-  gateway_ip_configuration {
-    name      = "appgw-ipconfig"
-    subnet_id = var.subnet_id
-  }
+  frontend_ports = [
+    { name = "http";  port = 80  },
+    { name = "https"; port = 443 }
+  ]
 
-  frontend_port {
-    name = "http"
-    port = 80
-  }
+  frontend_ip_configurations = [
+    { name = "appgw-feip"; public_ip_address_id = var.public_ip_id }
+  ]
 
-  frontend_port {
-    name = "https"
-    port = 443
-  }
+  gateway_ip_configurations = [
+    { name = "appgw-ipcfg"; subnet_id = var.subnet_id }
+  ]
 
-  frontend_ip_configuration {
-    name                 = "appgw-feip"
-    public_ip_address_id = azurerm_public_ip.appgw.id
-  }
+  backend_address_pools = [
+    { name = "backend-pool" }
+  ]
 
-  backend_address_pool {
-    name = "backend-pool"
-  }
+  backend_http_settings = [
+    {
+      name                  = "backend-settings"
+      cookie_based_affinity = "Disabled"
+      port                  = 80
+      protocol              = "Http"
+      request_timeout       = 30
+    }
+  ]
 
-  backend_http_settings {
-    name                  = "backend-settings"
-    cookie_based_affinity = "Disabled"
-    port                  = 80
-    protocol              = "Http"
-    request_timeout       = 30
-  }
+  http_listeners = [
+    {
+      name                           = "listener"
+      frontend_ip_configuration_name = "appgw-feip"
+      frontend_port_name             = "https"
+      protocol                       = "Https"
+    }
+  ]
 
-  http_listener {
-    name                           = "listener"
-    frontend_ip_configuration_name = "appgw-feip"
-    frontend_port_name             = "https"
-    protocol                       = "Https"
-    ssl_certificate_name           = "dummy-cert"
-  }
+  request_routing_rules = [
+    {
+      name                       = "rule1"
+      rule_type                  = "Basic"
+      http_listener_name         = "listener"
+      backend_address_pool_name  = "backend-pool"
+      backend_http_settings_name = "backend-settings"
+    }
+  ]
 
-  request_routing_rule {
-    name                       = "rule1"
-    rule_type                  = "Basic"
-    http_listener_name         = "listener"
-    backend_address_pool_name  = "backend-pool"
-    backend_http_settings_name = "backend-settings"
-  }
-
-  waf_configuration {
+  waf_policy = {
     enabled          = true
     firewall_mode    = "Prevention"
     rule_set_type    = "OWASP"
