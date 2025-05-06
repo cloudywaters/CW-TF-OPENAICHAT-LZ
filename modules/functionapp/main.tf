@@ -1,6 +1,6 @@
 module "function" {
   source  = "Azure/avm-res-web-site/azurerm"
-  version = "1.0.0"
+  version = "0.16.4"
 
   name                = var.name
   resource_group_name = var.resource_group_name

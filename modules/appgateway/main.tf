@@ -1,6 +1,6 @@
 module "appgw" {
   source  = "Azure/avm-res-network-applicationgateway/azurerm"
-  version = "1.0.0"
+  version = "0.4.0"
 
   name                = var.name
   resource_group_name = var.resource_group_name
@@ -13,16 +13,16 @@ module "appgw" {
   }
 
   frontend_ports = [
-    { name = "http";  port = 80  },
-    { name = "https"; port = 443 }
+    { name = "http",  port = 80  },
+    { name = "https", port = 443 }
   ]
 
   frontend_ip_configurations = [
-    { name = "appgw-feip"; public_ip_address_id = var.public_ip_id }
+    { name = "appgw-feip", public_ip_address_id = var.public_ip_id }
   ]
 
   gateway_ip_configurations = [
-    { name = "appgw-ipcfg"; subnet_id = var.subnet_id }
+    { name = "appgw-ipcfg", subnet_id = var.subnet_id }
   ]
 
   backend_address_pools = [

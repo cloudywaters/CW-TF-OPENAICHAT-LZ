@@ -62,15 +62,15 @@ jobs:
 
       # Deploy to Test Environment
       - name: Terraform Init for Test
-        run: terraform init -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_STAGING }}" \
-                            -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_STAGING }}" \
-                            -backend-config="key=terraform-staging.tfstate"
+        run: terraform init -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_TEST }}" \
+                            -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_TEST }}" \
+                            -backend-config="key=terraform-test.tfstate"
 
       - name: Terraform Plan for Test
-        run: terraform plan -var-file="environments/staging.tfvars" -out=tfplan-staging
+        run: terraform plan -var-file="environments/test.tfvars" -out=tfplan-test
 
       - name: Terraform Apply for Test
-        run: terraform apply -auto-approve tfplan-staging
+        run: terraform apply -auto-approve tfplan-test
 
       # Deploy to Production Environment
       - name: Terraform Init for Prod

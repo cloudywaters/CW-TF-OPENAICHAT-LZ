@@ -1,6 +1,6 @@
 module "openai" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "1.0.0"
+  version = "0.7.0"
 
   name                = var.name
   resource_group_name = var.resource_group_name

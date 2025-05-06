@@ -1,6 +1,6 @@
 module "swa" {
   source  = "Azure/avm-res-web-staticsite/azurerm"
-  version = "1.0.0"
+  version = "0.6.0"
 
   name                = var.name
   resource_group_name = var.resource_group_name

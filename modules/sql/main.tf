@@ -1,13 +1,12 @@
 module "sql_server" {
   source  = "Azure/avm-res-sql-server/azurerm"
-  version = "1.0.0"
+  version = "0.1.4"
 
   name                       = var.sql_server_name
   resource_group_name        = var.resource_group_name
   location                   = var.location
   administrator_login        = var.admin_username
   administrator_login_password = var.admin_password
-  version                    = "12.0"
   tags                       = var.tags
 }
 
