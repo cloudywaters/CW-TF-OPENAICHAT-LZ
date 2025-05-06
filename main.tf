@@ -76,11 +76,6 @@ module "avm_function_app" {
     module.keyvault,
     module.network
   ]
-
-  tags = {
-    environment = "dev"
-    project     = "example-project"
-  }
 }
 
 # SQL Module (needs keyvault & network)
