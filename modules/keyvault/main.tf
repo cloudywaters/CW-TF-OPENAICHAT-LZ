@@ -1,6 +1,6 @@
 module "kv" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "0.16.4"
+  version = "0.10.0"
 
   name                = var.name
   resource_group_name = var.resource_group_name

@@ -15,24 +15,6 @@ resource "azurerm_resource_group" "network" {
   tags     = var.tags
 }
 
-# Naming Module (uses both RGs)
-module "naming" {
-  source      = "Azure/naming/azurerm"
-  version     = "1.0.0"
-
-  project     = var.project
-  environment = var.environment
-  application = var.application
-  location    = var.location
-  delimiter   = "-"
-
-  tags = var.tags
-
-  depends_on = [
-    azurerm_resource_group.core,
-    azurerm_resource_group.network
-  ]
-}
 
 # Networking Module (depends on network RG)
 module "network" {
