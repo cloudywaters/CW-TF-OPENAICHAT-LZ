@@ -13,17 +13,14 @@ module "appgw" {
   }
 
   frontend_ports = [
-    { name = "http",  port = 80  },
+    { name = "http", port = 80 },
     { name = "https", port = 443 }
   ]
 
-  frontend_ip_configurations = [
-    { name = "appgw-feip", public_ip_address_id = var.public_ip_id }
-  ]
-
-  gateway_ip_configurations = [
-    { name = "appgw-ipcfg", subnet_id = var.subnet_id }
-  ]
+  gateway_ip_configuration = {
+    name      = "appgw-ipcfg"
+    subnet_id = var.subnet_id
+  }
 
   backend_address_pools = [
     { name = "backend-pool" }
@@ -58,12 +55,20 @@ module "appgw" {
     }
   ]
 
-  waf_policy = {
-    enabled          = true
-    firewall_mode    = "Prevention"
-    rule_set_type    = "OWASP"
+  tags = var.tags
+}
+
+  # Enable WAF
+  waf_configuration = {
+    enabled = true
+    rule_set_type = "OWASP"
     rule_set_version = "3.2"
+    mode = "Prevention"
   }
 
-  tags = var.tags
+  # Enable diagnostics
+  diagnostics_settings = {
+    enabled = true
+    log_analytics_workspace_id = var.log_analytics_workspace_id
+  }
 }
