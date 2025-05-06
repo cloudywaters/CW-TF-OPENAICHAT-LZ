@@ -1,18 +1,29 @@
-module "function" {
-  source  = "Azure/avm-res-compute-functionapp/azurerm"
-  version = "0.4.0"
+// modules/functionapp/main.tf
 
-  name                     = var.name
-  resource_group_name      = var.resource_group_name
-  location                 = var.location
-  service_plan_resource_id = var.service_plan_resource_id  # Pass the App Service Plan resource ID
-  os_type                  = var.os_type                   # Specify the OS type (e.g., Linux or Windows)
+module "avm_function_app" {
+  source  = "Azure/avm-res-web-site/azurerm"
+  version = "0.6.3"               // pick the latest published version
 
-  app_settings = {
-    "FUNCTIONS_EXTENSION_VERSION" = "~4"
-    "WEBSITE_RUN_FROM_PACKAGE"    = "1"
+  name                = var.name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+
+  // Consumption plan
+  kind     = "functionapp"
+  sku_name = "var.function_sku_name"
+  sku_tier = "var.function_sku_tier"
+
+  // Runtime stack
+  site_config = {
+    linux_fx_version = "PYTHON:3.11"
   }
 
-  tags = var.tags
+  identity = {
+    type = "SystemAssigned"
+  }
+
+  app_settings = var.app_settings
+  tags         = var.tags
 }
+
 
