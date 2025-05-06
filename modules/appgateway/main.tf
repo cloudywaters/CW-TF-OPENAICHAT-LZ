@@ -57,18 +57,3 @@ module "appgw" {
 
   tags = var.tags
 }
-
-  # Enable WAF
-  waf_configuration = {
-    enabled = true
-    rule_set_type = "OWASP"
-    rule_set_version = "3.2"
-    mode = "Prevention"
-  }
-
-  # Enable diagnostics
-  diagnostics_settings = {
-    enabled = true
-    log_analytics_workspace_id = var.log_analytics_workspace_id
-  }
-}
