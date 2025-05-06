@@ -64,11 +64,13 @@ module "static_web_app" {
 }
 
 # Function App Module (needs keyvault & network)
-module "function_app" {
-  source                = "./modules/functionapp"
-  name                  = module.naming.function_app_name
-  resource_group_name   = azurerm_resource_group.core.name
-  location              = var.location
+module "function" {
+  source                  = "./modules/functionapp"
+  name                    = "example-function"
+  resource_group_name     = azurerm_resource_group.example.name
+  location                = azurerm_resource_group.example.location
+  service_plan_resource_id = azurerm_app_service_plan.example.id
+  os_type                 = "Linux"
   storage_account_name  = var.storage_account_name
   app_settings          = { "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)" }
   tags                  = var.tags
@@ -77,6 +79,11 @@ module "function_app" {
     module.keyvault,
     module.network
   ]
+
+  tags = {
+    environment = "dev"
+    project     = "example-project"
+  }
 }
 
 # SQL Module (needs keyvault & network)

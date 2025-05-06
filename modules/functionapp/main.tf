@@ -1,23 +1,18 @@
 module "function" {
-  source  = "Azure/avm-res-web-site/azurerm"
-  version = "0.16.4"
+  source  = "Azure/avm-res-compute-functionapp/azurerm"
+  version = "0.4.0"
 
-  name                = var.name
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  kind                = "functionapp"
-  sku_name            = "Y1"      # Consumption plan
-  sku_tier            = "Dynamic"
+  name                     = var.name
+  resource_group_name      = var.resource_group_name
+  location                 = var.location
+  service_plan_resource_id = var.service_plan_resource_id  # Pass the App Service Plan resource ID
+  os_type                  = var.os_type                   # Specify the OS type (e.g., Linux or Windows)
 
-  site_config = {
-    linux_fx_version = "PYTHON:3.11"
+  app_settings = {
+    "FUNCTIONS_EXTENSION_VERSION" = "~4"
+    "WEBSITE_RUN_FROM_PACKAGE"    = "1"
   }
 
-  identity = {
-    type = "SystemAssigned"
-  }
-
-  app_settings = var.app_settings
-  tags         = var.tags
+  tags = var.tags
 }
 

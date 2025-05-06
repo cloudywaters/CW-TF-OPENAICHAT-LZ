@@ -72,3 +72,12 @@ variable "appgw_subnet_id" {}
 variable "tags" {
   type = map(string)
 }
+variable "service_plan_resource_id" {
+  type        = string
+  description = "The resource ID of the App Service Plan to associate with the Function App."
+}
+
+variable "os_type" {
+  type        = string
+  description = "The operating system type for the Function App (e.g., Linux or Windows)."
+}
