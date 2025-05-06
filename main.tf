@@ -1,105 +1,167 @@
-module "naming" {
-  source = "./modules/naming"
-  prefix = var.prefix
-  suffix = var.suffix
-}
+#########################
+# main.tf (root module with explicit dependencies)
+#########################
 
+# Create Resource Groups
 resource "azurerm_resource_group" "core" {
-  name     = module.naming.core_rg_name
+  name     = var.resource_group_name
   location = var.location
   tags     = var.tags
 }
 
 resource "azurerm_resource_group" "network" {
-  name     = module.naming.network_rg_name
+  name     = var.network_rg
   location = var.location
   tags     = var.tags
 }
 
+# Naming Module (uses both RGs)
+module "naming" {
+  source      = "Azure/naming/azurerm"
+  version     = "1.0.0"
+
+  project     = var.project
+  environment = var.environment
+  application = var.application
+  location    = var.location
+  delimiter   = "-"
+
+  tags = var.tags
+
+  depends_on = [
+    azurerm_resource_group.core,
+    azurerm_resource_group.network
+  ]
+}
+
+# Networking Module (depends on network RG)
 module "network" {
-  depends_on         = [azurerm_resource_group.network]
   source              = "./modules/network"
-  vnet_name           = module.naming.vnet_name
-  location            = var.location
+  vnet_name           = module.naming.virtual_network_name
   resource_group_name = azurerm_resource_group.network.name
+  location            = var.location
   address_space       = var.address_space
   subnets             = var.subnets
   tags                = var.tags
+
+  depends_on = [
+    azurerm_resource_group.network
+  ]
 }
 
+# Key Vault Module (after network)
+module "keyvault" {
+  source              = "./modules/keyvault"
+  name                = module.naming.key_vault_name
+  resource_group_name = azurerm_resource_group.core.name
+  location            = var.location
+  admin_object_id     = data.azurerm_client_config.current.object_id
+  tags                = var.tags
+
+  depends_on = [
+    module.network
+  ]
+}
+
+# Static Web App Module (needs keyvault & network)
 module "static_web_app" {
   source              = "./modules/staticwebapp"
   name                = module.naming.static_web_app_name
-  location            = var.location
   resource_group_name = azurerm_resource_group.core.name
+  location            = var.location
   branch              = var.branch
   repository_url      = var.repository_url
   token_secret_name   = "@Microsoft.KeyVault(SecretName=static-webapp-token)"
   app_settings        = var.web_app_settings
   tags                = var.tags
+
+  depends_on = [
+    module.keyvault,
+    module.network
+  ]
 }
 
+# Function App Module (needs keyvault & network)
 module "function_app" {
   source                = "./modules/functionapp"
   name                  = module.naming.function_app_name
-  location              = var.location
   resource_group_name   = azurerm_resource_group.core.name
+  location              = var.location
   storage_account_name  = var.storage_account_name
-  app_settings          = {
-    "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)"
-    "OPENAI_API_SPEC_URL" = module.openai.openai_api_spec_url
-  }
+  app_settings          = { "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)" }
   tags                  = var.tags
+
+  depends_on = [
+    module.keyvault,
+    module.network
+  ]
 }
 
+# SQL Module (needs keyvault & network)
 module "sql" {
   source                = "./modules/sql"
-  name                  = module.naming.sql_db_name
+  name                  = module.naming.sql_database_name
   sql_server_name       = module.naming.sql_server_name
   resource_group_name   = azurerm_resource_group.core.name
   location              = var.location
   admin_username        = var.sql_admin_username
-  admin_password        = var.sql_admin_password
+  admin_password        = azurerm_key_vault_secret.sql_admin_password.value
   tags                  = var.tags
+
+  depends_on = [
+    module.keyvault,
+    module.network
+  ]
 }
 
+# OpenAI Module (after network)
 module "openai" {
   source                = "./modules/openai"
   name                  = module.naming.openai_name
-  location              = var.location
   resource_group_name   = azurerm_resource_group.core.name
+  location              = var.location
   subdomain             = var.openai_subdomain
   tags                  = var.tags
+
+  depends_on = [
+    module.network
+  ]
 }
 
+# API Management Module (after function and openai)
 module "apim" {
-  depends_on            = [module.function_app]
-  depends_on            = [module.openai]
   source                = "./modules/apim"
   name                  = module.naming.apim_name
-  location              = var.location
   resource_group_name   = azurerm_resource_group.core.name
+  location              = var.location
   publisher_name        = var.apim_publisher_name
   publisher_email       = var.apim_publisher_email
   sku_name              = var.apim_sku
   function_api_spec_url = module.function_app.function_api_spec_url
   openai_api_spec_url   = module.openai.openai_api_spec_url
   tags                  = var.tags
+
+  depends_on = [
+    module.function_app,
+    module.openai
+  ]
 }
 
+# Application Gateway Module (after network)
 module "appgateway" {
-  depends_on            = [module.network]
-  depends_on            = [module.apim]
-  depends_on            = [module.static_web_app]
-  depends_on            = [module.function_app]
   source                = "./modules/appgateway"
-  name                  = module.naming.app_gateway_name
-  location              = var.location
+  name                  = module.naming.application_gateway_name
   resource_group_name   = azurerm_resource_group.core.name
-  subnet_id             = var.appgw_subnet_id
+  location              = var.location
+  subnet_id             = module.network.subnets["appgw"].id
   tags                  = var.tags
+
+  depends_on = [
+    module.network
+  ]
 }
 
+# Secret generation and Key Vault storage (auto-generated)
 resource "random_password" "sql_admin_password" {
   length  = 16
   special = true
@@ -133,10 +195,11 @@ resource "azurerm_key_vault_secret" "static_webapp_token" {
   key_vault_id = module.keyvault.id
 }
 
+# Access Policies for Managed Identities
 resource "azurerm_key_vault_access_policy" "functionapp" {
   key_vault_id = module.keyvault.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_linux_function_app.function.identity[0].principal_id
+  object_id    = module.function_app.identity.principal_id
 
   secret_permissions = ["get"]
 }
@@ -144,7 +207,7 @@ resource "azurerm_key_vault_access_policy" "functionapp" {
 resource "azurerm_key_vault_access_policy" "staticwebapp" {
   key_vault_id = module.keyvault.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_static_site.static.identity[0].principal_id
+  object_id    = module.static_web_app.identity.principal_id
 
   secret_permissions = ["get"]
 }
