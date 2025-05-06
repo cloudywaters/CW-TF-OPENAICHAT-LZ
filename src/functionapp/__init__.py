@@ -1,35 +1,58 @@
-import azure.functions as func
-import logging
-import json
-import openai
 import os
+import logging
+from flask import Flask, request, jsonify
+import openai
 
-# Initialize the Azure Function App
-app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+# Initialize Flask app
+app = Flask(__name__)
 
-@app.function_name(name="chat")
-@app.route(route="chat", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
-def chat(req: func.HttpRequest) -> func.HttpResponse:
-    # Log the receipt of a chat request
-    logging.info("Chat request received.")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Fetch OpenAI API key from environment variables
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    logger.error("OpenAI API key is not set in environment variables")
+    raise RuntimeError("OpenAI API key is not configured")
+
+# Set OpenAI API key
+openai.api_key = OPENAI_API_KEY
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """
+    Chat endpoint to handle user prompts and return OpenAI responses.
+    """
     try:
-        # Parse the request body to extract the prompt
-        req_body = req.get_json()
-        prompt = req_body.get("prompt")
+        # Parse request body
+        data = request.get_json()
+        if not data or 'prompt' not in data:
+            logger.warning("Invalid request: Missing 'prompt' in request body")
+            return jsonify({"error": "Missing 'prompt' in request body"}), 400
 
-        # Set the OpenAI API key from environment variables
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        prompt = data['prompt']
+        logger.info(f"Received prompt: {prompt}")
 
-        # Generate a response using OpenAI's ChatCompletion API
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
+        # Call OpenAI API
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=150
         )
-        reply = response.choices[0].message["content"]
+        logger.info(f"OpenAI response: {response}")
 
-        # Return the AI-generated response as JSON
-        return func.HttpResponse(json.dumps({"reply": reply}), mimetype="application/json")
+        # Return response to client
+        return jsonify(response), 200
+
+    except openai.error.OpenAIError as e:
+        logger.error(f"OpenAI API error: {e}")
+        return jsonify({"error": "Error communicating with OpenAI API"}), 500
+
     except Exception as e:
-        # Log any errors and return a 500 response
-        logging.error(f"Error: {str(e)}")
-        return func.HttpResponse("Error processing request", status_code=500)
+        logger.error(f"Unexpected error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+if __name__ == "__main__":
+    # Run the Flask app
+    app.run(host="0.0.0.0", port=5000)

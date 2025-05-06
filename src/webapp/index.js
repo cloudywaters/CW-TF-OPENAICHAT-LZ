@@ -1,37 +1,74 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
+import React, { useState } from "react";
+import axios from "axios";
 
-function App() {
-  // State to hold the user's message
-  const [message, setMessage] = React.useState("");
+const ChatApp = () => {
+  const [message, setMessage] = useState("");
+  const [response, setResponse] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // State to hold the AI's response
-  const [response, setResponse] = React.useState("");
-
-  // Function to send the user's message to the backend API
   const sendMessage = async () => {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: message }) // Send the user's message as a JSON payload
-    });
-    const data = await res.json(); // Parse the JSON response
-    setResponse(data.reply); // Update the response state with the AI's reply
+    if (!message.trim()) {
+      setError("Message cannot be empty.");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await axios.post("/api/chat", { prompt: message });
+      setResponse(res.data.choices[0].text);
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setError("Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h1>Chat with AI</h1>
-      {/* Input field for the user's message */}
-      <input value={message} onChange={e => setMessage(e.target.value)} />
-      {/* Button to send the message */}
-      <button onClick={sendMessage}>Send</button>
-      {/* Display the AI's response */}
-      <p><strong>Response:</strong> {response}</p>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h1>Chat with OpenAI</h1>
+      <textarea
+        rows="4"
+        cols="50"
+        placeholder="Type your message here..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        style={{ width: "100%", marginBottom: "10px" }}
+      />
+      <br />
+      <button
+        onClick={sendMessage}
+        disabled={!message.trim() || loading}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#0078D4",
+          color: "white",
+          border: "none",
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Sending..." : "Send"}
+      </button>
+      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+      {response && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "10px",
+            border: "1px solid #ccc",
+            borderRadius: "5px",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <h3>Response:</h3>
+          <p>{response}</p>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-// Render the React app into the root div
-const root = createRoot(document.getElementById("root"));
-root.render(<App />);
+export default ChatApp;

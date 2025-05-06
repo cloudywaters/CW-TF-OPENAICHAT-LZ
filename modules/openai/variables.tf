@@ -19,3 +19,8 @@ variable "tags" {
   description = "Tags to apply to OpenAI"
   type        = map(string)
 }
+variable "sku_name" {
+  type        = string
+  description = "The SKU name for the OpenAI resource"
+  default     = "S0"
+}

@@ -5,7 +5,7 @@ module "openai" {
   name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
-  sku_name            = "S0"
+  sku_name            = var.sku_name
   kind                = "OpenAI"
   custom_subdomain    = var.subdomain
 
