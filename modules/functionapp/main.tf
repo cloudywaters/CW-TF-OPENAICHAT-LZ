@@ -1,6 +1,6 @@
 module "avm_function_app" {
   source  = "Azure/avm-res-web-site/azurerm"
-  version = "0.6.3"               // pick the latest published version
+  version = ">=0.7.0"                  // pick the latest published version
 
   name                = var.name
   resource_group_name = var.resource_group_name
