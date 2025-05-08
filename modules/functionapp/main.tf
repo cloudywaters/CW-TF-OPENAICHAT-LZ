@@ -6,18 +6,13 @@ module "avm_function_app" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  // Consumption plan
-  kind     = "functionapp"
-  sku_name = "var.function_sku_name"
-  sku_tier = "var.function_sku_tier"
+  // Required arguments
+  os_type                 = "Linux"  // Specify the OS type
+  service_plan_resource_id = var.service_plan_resource_id
 
   // Runtime stack
   site_config = {
     linux_fx_version = "PYTHON:3.11"
-  }
-
-  identity = {
-    type = "SystemAssigned"
   }
 
   app_settings = var.app_settings
