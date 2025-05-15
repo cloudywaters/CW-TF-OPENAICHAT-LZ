@@ -1,22 +1,62 @@
-module "avm_function_app" {
-  source  = "Azure/avm-res-web-site/azurerm"
-  version = ">=0.7.0"                  // pick the latest published version
+# Azure Function App Module
 
-  name                = var.name
+# The Storage Account for Function App
+resource "azurerm_storage_account" "function" {
+  name                     = lower(replace("st${var.name}sa", "-", ""))
+  resource_group_name      = var.resource_group_name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  min_tls_version          = "TLS1_2"
+  
+  tags = var.tags
+}
+
+# App Service Plan for Function App
+resource "azurerm_service_plan" "function" {
+  name                = "plan-${var.name}"
   resource_group_name = var.resource_group_name
   location            = var.location
+  os_type             = "Linux"
+  sku_name            = "Y1" # Consumption plan
+  
+  tags = var.tags
+}
 
-  // Required arguments
-  os_type                 = "Linux"  // Specify the OS type
-  service_plan_resource_id = var.service_plan_resource_id
-
-  // Runtime stack
-  site_config = {
-    linux_fx_version = "PYTHON:3.11"
+# Function App
+resource "azurerm_linux_function_app" "function" {
+  name                       = var.name
+  resource_group_name        = var.resource_group_name
+  location                   = var.location
+  service_plan_id            = azurerm_service_plan.function.id
+  storage_account_name       = azurerm_storage_account.function.name
+  storage_account_access_key = azurerm_storage_account.function.primary_access_key
+  
+  site_config {
+    application_stack {
+      python_version = "3.11"
+    }
   }
-
+  
   app_settings = var.app_settings
-  tags         = var.tags
+  
+  identity {
+    type = "SystemAssigned"
+  }
+  
+  tags = var.tags
+}
+
+# Function API Management API
+resource "azurerm_api_management_api" "function" {
+  count               = var.create_api_spec ? 1 : 0
+  name                = "function-api"
+  resource_group_name = var.resource_group_name
+  api_management_name = var.api_management_name
+  revision            = "1"
+  display_name        = "Function API"
+  path                = "function"
+  protocols           = ["https"]
 }
 
 

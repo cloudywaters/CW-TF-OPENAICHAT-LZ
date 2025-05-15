@@ -1,37 +1,48 @@
-
 variable "name" {
-  description = "API Management name"
+  description = "The name of the API Management instance"
   type        = string
 }
-variable "location" {
-  description = "Azure region"
-  type        = string
-}
+
 variable "resource_group_name" {
-  description = "Resource group name"
+  description = "The name of the resource group"
   type        = string
 }
+
+variable "location" {
+  description = "The location/region of the resources"
+  type        = string
+}
+
 variable "publisher_name" {
-  description = "Publisher name"
+  description = "The name of the publisher"
   type        = string
 }
+
 variable "publisher_email" {
-  description = "Publisher email"
+  description = "The email of the publisher"
   type        = string
 }
+
 variable "sku_name" {
-  description = "SKU (e.g., Developer_1, Consumption)"
+  description = "The SKU of the API Management instance"
   type        = string
+  default     = "Developer_1"
 }
+
 variable "function_api_spec_url" {
-  description = "URL to Swagger/OpenAPI spec for Function App"
+  description = "The URL of the Function API specification"
   type        = string
+  default     = ""
 }
+
 variable "openai_api_spec_url" {
-  description = "URL to Swagger/OpenAPI spec for OpenAI"
+  description = "The URL of the OpenAI API specification"
   type        = string
+  default     = ""
 }
+
 variable "tags" {
-  description = "Resource tags"
+  description = "Tags to apply to resources"
   type        = map(string)
+  default     = {}
 }

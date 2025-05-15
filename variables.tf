@@ -1,83 +1,131 @@
-// Prefix for resource naming convention
-variable "prefix" {}
+# Environment Variables
+variable "environment" {
+  description = "Environment (dev, test, prod)"
+  type        = string
+}
 
-// Suffix for resource naming convention to ensure uniqueness
-variable "suffix" {}
+variable "project_name" {
+  description = "Project name"
+  type        = string
+}
 
-// Azure region where resources will be deployed
-variable "location" {}
+variable "region_code" {
+  description = "Short region code (e.g., 'weu' for West Europe)"
+  type        = string
+}
 
-// Name of the core resource group
-variable "resource_group_name" {}
+variable "prefix" {
+  description = "Prefix to be used in resource naming"
+  type        = string
+  default     = "chat"
+}
 
-// Name of the network resource group
-variable "network_rg" {}
+variable "instance_num" {
+  description = "Instance number for resources"
+  type        = string
+  default     = "001"
+}
 
-// Address space for the virtual network
+# Resource Group Variables
+variable "resource_group_name" {
+  description = "Core resource group name"
+  type        = string
+  default     = null # Will use the naming module if not specified
+}
+
+variable "network_rg" {
+  description = "Network resource group name"
+  type        = string
+  default     = null # Will use the naming module if not specified
+}
+
+variable "location" {
+  description = "Azure region for resources"
+  type        = string
+}
+
+# Network Variables
 variable "address_space" {
-  type = list(string)
+  description = "VNet address space"
+  type        = list(string)
 }
 
-// Subnet definitions for the virtual network
 variable "subnets" {
-  type = map(string)
+  description = "Map of subnet configurations"
+  type = map(object({
+    address_prefixes  = list(string)
+    service_endpoints = optional(list(string))
+    delegation = optional(object({
+      name         = string
+      service_name = string
+      actions      = list(string)
+    }))
+  }))
 }
 
-// Branch name for deployment
-variable "branch" {}
+# Static Web App Variables
+variable "branch" {
+  description = "Branch name for static web app"
+  type        = string
+}
 
-// Repository URL for the static web app
-variable "repository_url" {}
+variable "repository_url" {
+  description = "GitHub repository URL"
+  type        = string
+}
 
-// Secret name for the deployment token
-variable "token_secret_name" {}
-
-// Application settings for the web app
 variable "web_app_settings" {
-  type = map(string)
+  description = "Application settings for static web app"
+  type        = map(string)
+  default     = {}
 }
 
-// Application settings for the function app
-variable "function_app_settings" {
-  type = map(string)
+# Function App Variables
+variable "function_app_name" {
+  description = "Function app name"
+  type        = string
+  default     = null # Will use the naming module if not specified
 }
 
-// Name of the storage account
-variable "storage_account_name" {}
-
-// SQL admin username
-variable "sql_admin_username" {}
-
-// SQL admin password (sensitive)
-variable "sql_admin_password" {
-  sensitive = true
+# SQL Variables
+variable "sql_admin_username" {
+  description = "SQL admin username"
+  type        = string
+  sensitive   = true
 }
 
-// Subdomain for OpenAI Cognitive Services
-variable "openai_subdomain" {}
+# OpenAI Variables
+variable "openai_subdomain" {
+  description = "OpenAI service subdomain"
+  type        = string
+}
 
-// Publisher name for API Management
-variable "apim_publisher_name" {}
+variable "openai_sku" {
+  description = "OpenAI service SKU"
+  type        = string
+  default     = "S0"
+}
 
-// Publisher email for API Management
-variable "apim_publisher_email" {}
+# APIM Variables
+variable "apim_publisher_name" {
+  description = "API Management publisher name"
+  type        = string
+}
 
-// SKU for API Management
-variable "apim_sku" {}
+variable "apim_publisher_email" {
+  description = "API Management publisher email"
+  type        = string
+}
 
-// Subnet ID for Application Gateway
-variable "appgw_subnet_id" {}
+variable "apim_sku" {
+  description = "API Management SKU"
+  type        = string
+  default     = "Developer"
+}
 
-// Tags to apply to all resources
+# Tags
 variable "tags" {
-  type = map(string)
-}
-variable "service_plan_resource_id" {
-  type        = string
-  description = "The resource ID of the App Service Plan to associate with the Function App."
-}
-
-variable "os_type" {
-  type        = string
-  description = "The operating system type for the Function App (e.g., Linux or Windows)."
+  description = "Tags to apply to all resources"
+  type        = map(string)
+  default     = {}
 }

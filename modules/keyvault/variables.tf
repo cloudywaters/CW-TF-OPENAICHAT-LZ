@@ -1,21 +1,25 @@
-
 variable "name" {
-  description = "Key Vault name"
+  description = "The name of the Key Vault"
   type        = string
 }
-variable "location" {
-  description = "Azure region"
-  type        = string
-}
+
 variable "resource_group_name" {
-  description = "Resource group name"
+  description = "The name of the resource group"
   type        = string
 }
+
+variable "location" {
+  description = "The location/region of the resources"
+  type        = string
+}
+
 variable "admin_object_id" {
-  description = "Admin or bootstrapper object ID for initial access"
+  description = "The object ID of the admin principal"
   type        = string
 }
+
 variable "tags" {
-  description = "Tags to apply"
+  description = "Tags to apply to resources"
   type        = map(string)
+  default     = {}
 }

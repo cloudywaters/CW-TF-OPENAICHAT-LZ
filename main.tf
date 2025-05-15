@@ -2,19 +2,31 @@
 # main.tf (root module with explicit dependencies)
 #########################
 
+# Data sources
+data "azurerm_client_config" "current" {}
+
+# Naming module
+module "naming" {
+  source      = "./modules/naming"
+  environment = var.environment
+  project_name = var.project_name
+  region_code = var.region_code
+  prefix     = var.prefix         # Add the required prefix argument
+  suffix     = var.instance_num   # Use instance_num as the suffix
+}
+
 # Create Resource Groups
 resource "azurerm_resource_group" "core" {
-  name     = var.resource_group_name
+  name     = coalesce(var.resource_group_name, module.naming.resource_group_name)
   location = var.location
   tags     = var.tags
 }
 
 resource "azurerm_resource_group" "network" {
-  name     = var.network_rg
+  name     = coalesce(var.network_rg, "${module.naming.resource_group_name}-network")
   location = var.location
   tags     = var.tags
 }
-
 
 # Networking Module (depends on network RG)
 module "network" {
@@ -64,13 +76,13 @@ module "static_web_app" {
 }
 
 # Function App Module (needs keyvault & network)
-module "avm_function_app" {
-  source                  = "./modules/functionapp"
-  name                    = var.function_app_name
-  resource_group_name     = azurerm_resource_group.core.name
-  location                = var.location
-  app_settings          = { "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)" }
-  tags                  = var.tags
+module "function_app" {  # Changed from avm_function_app to function_app for consistency
+  source              = "./modules/functionapp"
+  name                = var.function_app_name
+  resource_group_name = azurerm_resource_group.core.name
+  location            = var.location
+  app_settings        = { "OPENAI_API_KEY" = "@Microsoft.KeyVault(SecretName=openai-api-key)" }
+  tags                = var.tags
 
   depends_on = [
     module.keyvault,
@@ -87,6 +99,7 @@ module "sql" {
   location              = var.location
   admin_username        = var.sql_admin_username
   admin_password        = azurerm_key_vault_secret.sql_admin_password.value
+  server_version        = "12.0"  # Added SQL Server version parameter
   tags                  = var.tags
 
   depends_on = [
@@ -182,7 +195,7 @@ resource "azurerm_key_vault_access_policy" "functionapp" {
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = module.function_app.identity.principal_id
 
-  secret_permissions = ["get"]
+  secret_permissions = ["Get"]  # Fixed case to "Get" instead of "get"
 }
 
 resource "azurerm_key_vault_access_policy" "staticwebapp" {
@@ -190,5 +203,5 @@ resource "azurerm_key_vault_access_policy" "staticwebapp" {
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = module.static_web_app.identity.principal_id
 
-  secret_permissions = ["get"]
+  secret_permissions = ["Get"]  # Fixed case to "Get" instead of "get"
 }

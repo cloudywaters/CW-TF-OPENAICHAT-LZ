@@ -1,33 +1,38 @@
-
 variable "name" {
-  description = "Function App name"
+  description = "The name of the function app"
   type        = string
 }
-variable "location" {
-  description = "Azure location"
-  type        = string
-}
+
 variable "resource_group_name" {
-  description = "Resource group name"
+  description = "The name of the resource group"
   type        = string
 }
-variable "storage_account_name" {
-  description = "Storage account for Function App"
+
+variable "location" {
+  description = "The location/region of the resources"
   type        = string
 }
+
 variable "app_settings" {
-  description = "Application settings"
+  description = "Application settings for the function app"
   type        = map(string)
+  default     = {}
 }
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
+  default     = {}
 }
-variable "function_sku_name" {
-  description = "Function App SKU name"
-  type        = map(string)
-  }
-variable "function_sku_tier" {
-  description = "Function App SKU tier"
-  type        = map(string)
+
+variable "create_api_spec" {
+  description = "Whether to create an API Management API for the function"
+  type        = bool
+  default     = false
+}
+
+variable "api_management_name" {
+  description = "The name of the API Management instance"
+  type        = string
+  default     = ""
 }

@@ -1,33 +1,50 @@
-
 variable "name" {
-  description = "Name of the Static Web App"
+  description = "The name of the Static Web App"
   type        = string
 }
-variable "location" {
-  description = "Azure location"
-  type        = string
-}
+
 variable "resource_group_name" {
-  description = "Name of the resource group"
+  description = "The name of the resource group"
   type        = string
 }
+
+variable "location" {
+  description = "The location/region of the resources"
+  type        = string
+}
+
 variable "branch" {
-  description = "Branch name for deployment"
+  description = "The branch to deploy"
   type        = string
+  default     = "main"
 }
+
 variable "repository_url" {
-  description = "GitHub repository URL"
+  description = "The URL of the GitHub repository"
   type        = string
+  default     = ""
 }
+
 variable "token_secret_name" {
-  description = "Secret name for deployment token"
+  description = "The name of the secret containing the GitHub token"
   type        = string
+  default     = ""
 }
+
+variable "custom_domain" {
+  description = "The custom domain for the Static Web App"
+  type        = string
+  default     = ""
+}
+
 variable "app_settings" {
-  description = "App settings for the Static Web App"
+  description = "Application settings for the Static Web App"
   type        = map(string)
+  default     = {}
 }
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
+  default     = {}
 }
