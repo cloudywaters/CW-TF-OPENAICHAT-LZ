@@ -1,6 +1,19 @@
-# Azure Landing Zone Accelerator with AI Chat Integration
+# Azure OpenAI Chat Landing Zone
 
-This project is a production-grade, Terraform-based Azure Landing Zone accelerator. It includes full automation to deploy a scalable web application powered by Azure OpenAI, managed APIs, secure networking, and monitoring.
+This Terraform implementation provides an infrastructure-as-code approach to deploy a secure, scalable Azure landing zone for OpenAI-powered chat applications.
+
+## Architecture Overview
+
+This landing zone deploys a comprehensive solution with the following components:
+
+- **Azure OpenAI Service**: Provides AI model capabilities
+- **Function App**: Hosts backend logic and API endpoints
+- **Static Web App**: Serves the frontend application
+- **Azure SQL Database**: Stores chat data and history
+- **Key Vault**: Securely manages secrets
+- **API Management**: Centralizes API governance
+- **Application Gateway**: Handles traffic routing and WAF protection
+- **Virtual Network**: Secures communication between services
 
 ## 🚀 Features
 
